@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Monitoring — Monitoramento de Mini Mercados</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:       #080d08;
+  --bg2:      #0d160d;
+  --surface:  #152015;
+  --surface2: #1a2a1a;
+  --accent:   #4ade80;
+  --accent2:  #22c55e;
+  --adim:     rgba(74,222,128,0.10);
+  --aborder:  rgba(74,222,128,0.18);
+  --text:     #eef6ee;
+  --text2:    #93b893;
+  --text3:    #52735a;
+  --danger:   #f87171;
+  --warn:     #fbbf24;
+  --serif:    'DM Serif Display', Georgia, serif;
+  --sans:     'DM Sans', system-ui, sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:16px;line-height:1.7;overflow-x:hidden}
+
+/* ── NAV ── */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:.9rem 3rem;background:rgba(8,13,8,.92);backdrop-filter:blur(14px);border-bottom:1px solid rgba(74,222,128,.07)}
+.logo{font-family:var(--serif);font-size:1.35rem;color:var(--accent);text-decoration:none}
+.logo span{color:var(--text2);font-style:italic}
+nav ul{display:flex;gap:2.5rem;list-style:none}
+nav ul a{color:var(--text2);text-decoration:none;font-size:.83rem;font-weight:500;letter-spacing:.05em;text-transform:uppercase;transition:color .2s}
+nav ul a:hover{color:var(--accent)}
+.nav-cta{background:var(--accent)!important;color:#080d08!important;padding:.45rem 1.2rem;border-radius:4px;font-weight:700!important}
+.nav-cta:hover{background:var(--accent2)!important}
+.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;background:none;border:none;padding:4px}
+.hamburger span{display:block;width:24px;height:2px;background:var(--text2);border-radius:2px;transition:all .3s}
+.hamburger.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.hamburger.open span:nth-child(2){opacity:0}
+.hamburger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+.mobile-menu{display:none;position:fixed;top:58px;left:0;right:0;background:rgba(8,13,8,.98);border-bottom:1px solid var(--aborder);padding:1.5rem 2rem;flex-direction:column;gap:1.25rem;z-index:99}
+.mobile-menu.open{display:flex}
+.mobile-menu a{color:var(--text2);text-decoration:none;font-size:1rem;font-weight:500;letter-spacing:.04em;text-transform:uppercase}
+.mobile-menu .nav-cta{background:var(--accent);color:#080d08!important;padding:.6rem 1.25rem;border-radius:4px;text-align:center;font-weight:700}
+
+/* ── HERO ── */
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:8rem 2rem 5rem;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 55% at 50% 0%,rgba(74,222,128,.07) 0%,transparent 65%),repeating-linear-gradient(0deg,transparent,transparent 59px,rgba(74,222,128,.03) 60px),repeating-linear-gradient(90deg,transparent,transparent 59px,rgba(74,222,128,.03) 60px);pointer-events:none}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:.5rem;background:rgba(248,113,113,.10);border:1px solid rgba(248,113,113,.25);color:#fca5a5;font-size:.75rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;padding:.35rem 1rem;border-radius:100px;margin-bottom:2rem;animation:fadeUp .5s ease both}
+.hero-eyebrow::before{content:'';width:6px;height:6px;background:#f87171;border-radius:50%;animation:blink 1.8s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+.hero h1{font-family:var(--serif);font-size:clamp(2.6rem,5.5vw,4.6rem);line-height:1.08;color:var(--text);max-width:860px;margin-bottom:1.5rem;animation:fadeUp .5s .08s ease both}
+.hero h1 em{font-style:italic;color:var(--danger)}
+.hero h1 strong{color:var(--accent)}
+.hero-sub{font-size:1.1rem;color:var(--text2);max-width:520px;margin-bottom:2.5rem;font-weight:300;animation:fadeUp .5s .16s ease both}
+.hero-actions{display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;animation:fadeUp .5s .24s ease both}
+.btn-wa{display:inline-flex;align-items:center;gap:.6rem;background:#25d366;color:#fff;font-weight:700;font-size:1rem;padding:.9rem 2rem;border-radius:8px;text-decoration:none;transition:background .2s,transform .15s;letter-spacing:.01em}
+.btn-wa:hover{background:#1ebe5d;transform:translateY(-2px)}
+.btn-ghost{background:transparent;color:var(--text2);font-weight:500;font-size:.95rem;padding:.9rem 2rem;border-radius:8px;border:1px solid var(--aborder);text-decoration:none;transition:border-color .2s,color .2s}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+.hero-trust{margin-top:3.5rem;display:flex;align-items:center;gap:1.5rem;justify-content:center;flex-wrap:wrap;animation:fadeUp .5s .32s ease both}
+.trust-item{font-size:.8rem;color:var(--text3);display:flex;align-items:center;gap:.4rem}
+.trust-dot{width:4px;height:4px;background:var(--text3);border-radius:50%}
+
+/* ── RECURSOS ── */
+.recursos{padding:6rem 2rem;background:var(--bg2)}
+.container{max-width:1080px;margin:0 auto}
+.sec-label{font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:.9rem}
+.sec-title{font-family:var(--serif);font-size:clamp(1.9rem,3.2vw,2.6rem);line-height:1.15;color:var(--text);margin-bottom:1rem}
+.sec-title em{font-style:italic;color:var(--accent)}
+.sec-desc{font-size:1rem;color:var(--text2);max-width:540px;font-weight:300;line-height:1.8;margin-bottom:3.5rem}
+.recursos-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem}
+.rec-card{background:var(--surface);border:1px solid rgba(74,222,128,.07);border-radius:14px;padding:2rem 1.75rem;position:relative;overflow:hidden;transition:border-color .25s,background .25s}
+.rec-card:hover{border-color:var(--aborder);background:var(--surface2)}
+.rec-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:0;transition:opacity .3s}
+.rec-card:hover::after{opacity:1}
+.rec-num{font-family:var(--serif);font-size:2.8rem;color:rgba(74,222,128,.12);line-height:1;margin-bottom:1rem;font-style:italic}
+.rec-card h3{font-size:1.05rem;font-weight:600;color:var(--text);margin-bottom:.5rem}
+.rec-card p{font-size:.875rem;color:var(--text2);line-height:1.75}
+
+/* ── PREJUÍZO ── */
+.prejuizo{padding:6rem 2rem;background:var(--bg);position:relative;overflow:hidden}
+.prejuizo::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 50% 50%,rgba(248,113,113,.04) 0%,transparent 70%);pointer-events:none}
+.prej-header{text-align:center;max-width:640px;margin:0 auto 4rem}
+.prej-header .sec-title em{color:var(--danger)}
+.prej-header .sec-desc{margin:0 auto}
+.prej-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1.25rem;max-width:860px;margin:0 auto}
+.prej-card{background:var(--surface);border:1px solid rgba(248,113,113,.10);border-radius:14px;padding:1.75rem;display:flex;gap:1.25rem;align-items:flex-start;transition:border-color .2s}
+.prej-card:hover{border-color:rgba(248,113,113,.25)}
+.prej-icon{font-size:1.8rem;flex-shrink:0;margin-top:.1rem}
+.prej-card h4{font-size:.95rem;font-weight:600;color:var(--text);margin-bottom:.35rem}
+.prej-card p{font-size:.85rem;color:var(--text2);line-height:1.7}
+.prej-card span{display:inline-block;margin-top:.5rem;font-size:.75rem;font-weight:700;color:var(--danger);background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.15);padding:.2rem .6rem;border-radius:4px;letter-spacing:.04em}
+.prej-cta{text-align:center;margin-top:3rem}
+.prej-cta p{font-size:1.1rem;color:var(--text);font-family:var(--serif);margin-bottom:1.5rem;font-style:italic}
+
+/* ── PLANOS ── */
+.planos{padding:6rem 2rem;background:var(--bg2)}
+.planos-header{text-align:center;max-width:580px;margin:0 auto 3.5rem}
+.planos-header .sec-desc{margin:0 auto}
+.plans-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;align-items:start}
+.plan{background:var(--surface);border:1px solid rgba(74,222,128,.07);border-radius:16px;padding:2rem;position:relative;transition:border-color .2s}
+.plan.dest{border-color:var(--accent);background:var(--surface2)}
+.plan-tag{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:var(--accent);color:#080d08;font-size:.68rem;font-weight:800;letter-spacing:.09em;text-transform:uppercase;padding:.3rem 1rem;border-radius:100px;white-space:nowrap}
+.plan-name{font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:.75rem}
+.plan-price{margin-bottom:.5rem}
+.plan-price strong{font-family:var(--serif);font-size:2.3rem;color:var(--text);line-height:1}
+.plan-price span{font-size:.82rem;color:var(--text3);margin-left:.2rem}
+.plan-sub{font-size:.82rem;color:var(--text2);margin-bottom:1.5rem;padding-bottom:1.5rem;border-bottom:1px solid rgba(74,222,128,.07)}
+.plan-list{list-style:none;display:flex;flex-direction:column;gap:.55rem;margin-bottom:2rem}
+.plan-list li{font-size:.855rem;color:var(--text2);display:flex;align-items:flex-start;gap:.5rem}
+.plan-list li::before{content:'✓';color:var(--accent);font-weight:700;flex-shrink:0;font-size:.8rem}
+.plan-list li.off::before{content:'×';color:var(--text3)}
+.plan-list li.off{color:var(--text3)}
+.plan-btn{display:block;text-align:center;padding:.8rem;border-radius:8px;font-size:.9rem;font-weight:700;text-decoration:none;transition:all .2s;letter-spacing:.01em}
+.plan.dest .plan-btn{background:var(--accent);color:#080d08}
+.plan.dest .plan-btn:hover{background:var(--accent2)}
+.plan:not(.dest) .plan-btn{border:1px solid var(--aborder);color:var(--text2)}
+.plan:not(.dest) .plan-btn:hover{border-color:var(--accent);color:var(--accent)}
+
+/* ── FAQ ── */
+.faq{padding:6rem 2rem;background:var(--bg)}
+.faq-header{text-align:center;max-width:560px;margin:0 auto 3rem}
+.faq-list{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:.75rem}
+.faq-item{background:var(--surface);border:1px solid rgba(74,222,128,.07);border-radius:12px;overflow:hidden;transition:border-color .2s}
+.faq-item.open{border-color:var(--aborder)}
+.faq-q{width:100%;display:flex;align-items:center;justify-content:space-between;padding:1.2rem 1.5rem;background:none;border:none;color:var(--text);font-family:var(--sans);font-size:.95rem;font-weight:500;cursor:pointer;text-align:left;gap:1rem}
+.faq-q:hover{color:var(--accent)}
+.faq-arrow{width:20px;height:20px;border-radius:50%;border:1px solid var(--aborder);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.7rem;color:var(--accent);transition:transform .25s,background .2s}
+.faq-item.open .faq-arrow{transform:rotate(180deg);background:var(--adim)}
+.faq-a{max-height:0;overflow:hidden;transition:max-height .3s ease,padding .3s ease}
+.faq-item.open .faq-a{max-height:200px}
+.faq-a p{padding:0 1.5rem 1.25rem;font-size:.88rem;color:var(--text2);line-height:1.8}
+
+/* ── FOOTER ── */
+footer{background:var(--bg2);border-top:1px solid rgba(74,222,128,.07);padding:2.5rem 2rem}
+.footer-inner{max-width:1080px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1.5rem}
+.footer-logo{font-family:var(--serif);font-size:1.2rem;color:var(--accent);text-decoration:none}
+.footer-logo span{color:var(--text2);font-style:italic}
+.footer-links{display:flex;gap:2rem;flex-wrap:wrap}
+.footer-links a{font-size:.8rem;color:var(--text3);text-decoration:none;transition:color .2s}
+.footer-links a:hover{color:var(--accent)}
+.footer-copy{font-size:.78rem;color:var(--text3);width:100%;text-align:center;margin-top:.5rem;padding-top:1.25rem;border-top:1px solid rgba(74,222,128,.05)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px){
+  .recursos-grid{grid-template-columns:1fr 1fr}
+  .plans-grid{grid-template-columns:1fr}
+  .plans-grid .plan.dest{order:-1}
+}
+@media(max-width:640px){
+  nav{padding:.9rem 1.25rem}
+  nav ul{display:none}
+  .hamburger{display:flex}
+  .recursos-grid{grid-template-columns:1fr}
+  .prej-grid{grid-template-columns:1fr}
+  .footer-inner{flex-direction:column;align-items:flex-start}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="logo">Smart <span>Monitoring</span></a>
+  <ul>
+    <li><a href="#recursos">Soluções</a></li>
+    <li><a href="#prejuizo">O Problema</a></li>
+    <li><a href="#planos">Planos</a></li>
+    <li><a href="https://wa.me/5518996613486?text=Olá!%20Quero%20saber%20mais%20sobre%20o%20monitoramento." target="_blank" class="nav-cta">Falar agora</a></li>
+  </ul>
+  <button class="hamburger" id="hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+<div class="mobile-menu" id="mobile-menu">
+  <a href="#recursos" onclick="closeMenu()">Soluções</a>
+  <a href="#prejuizo" onclick="closeMenu()">O Problema</a>
+  <a href="#planos" onclick="closeMenu()">Planos</a>
+  <a href="https://wa.me/5518996613486?text=Olá!%20Quero%20saber%20mais%20sobre%20o%20monitoramento." target="_blank" class="nav-cta" onclick="closeMenu()">Falar agora</a>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-eyebrow">⚠ Seu mini mercado pode estar sendo lesado agora</div>
+  <h1>Cada dia sem monitoramento é <em>dinheiro</em> saindo pelo ralo</h1>
+  <p class="hero-sub">Furtos, desperdício, estoque descontrolado e caixa furado. A Smart Monitoring mostra tudo o que acontece no seu mercado — em tempo real, no seu celular.</p>
+  <div class="hero-actions">
+    <a href="https://wa.me/5518996613486?text=Olá!%20Quero%20proteger%20meu%20mini%20mercado.%20Pode%20me%20ajudar?" target="_blank" class="btn-wa">💬 Quero proteger meu mercado</a>
+    <a href="#prejuizo" class="btn-ghost">Ver o que você está perdendo →</a>
+  </div>
+  <div class="hero-trust">
+    <span class="trust-item">✓ Sem taxa de instalação</span>
+    <span class="trust-dot"></span>
+    <span class="trust-item">✓ Ativo em até 48h</span>
+    <span class="trust-dot"></span>
+    <span class="trust-item">✓ Suporte humano incluso</span>
+    <span class="trust-dot"></span>
+    <span class="trust-item">✓ Cancele quando quiser</span>
+  </div>
+</section>
+
+<!-- RECURSOS -->
+<section class="recursos" id="recursos">
+  <div class="container">
+    <p class="sec-label">O que entregamos</p>
+    <h2 class="sec-title">Monitoramento completo, <em>controle real</em></h2>
+    <p class="sec-desc">Três pilares que transformam a gestão do seu mini mercado de condomínio.</p>
+    <div class="recursos-grid">
+      <div class="rec-card">
+        <div class="rec-num">01</div>
+        <h3>Detecção inteligente</h3>
+        <p>Câmeras com análise de comportamento, alertas de acesso fora do horário e notificação imediata no seu WhatsApp antes que o problema vire prejuízo.</p>
+      </div>
+      <div class="rec-card">
+        <div class="rec-num">02</div>
+        <h3>Relatórios que revelam</h3>
+        <p>Vendas por hora, produtos com maior saída, horários de pico e divergências de caixa. Você toma decisões com dados, não com achismo.</p>
+      </div>
+      <div class="rec-card">
+        <div class="rec-num">03</div>
+        <h3>Aumento de faturamento</h3>
+        <p>Clientes que passam a monitorar o estoque de forma ativa relatam redução de até 30% no desperdício e aumento médio de 18% nas vendas mensais.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PREJUÍZO -->
+<section class="prejuizo" id="prejuizo">
+  <div class="container">
+    <div class="prej-header">
+      <p class="sec-label">O problema real</p>
+      <h2 class="sec-title">O prejuízo que <em>você não vê</em></h2>
+      <p class="sec-desc">Mini mercados sem monitoramento perdem em média R$1.200 por mês em situações completamente evitáveis.</p>
+    </div>
+    <div class="prej-grid">
+      <div class="prej-card">
+        <div class="prej-icon">🕳️</div>
+        <div>
+          <h4>Furtos não registrados</h4>
+          <p>Sem câmeras, moradores e funcionários sabem que não há controle. Produtos somem e ninguém sabe quando começou.</p>
+          <span>Perda estimada: R$300–600/mês</span>
+        </div>
+      </div>
+      <div class="prej-card">
+        <div class="prej-icon">🗑️</div>
+        <div>
+          <h4>Produto vencendo na prateleira</h4>
+          <p>Sem controle de validade e giro, itens vencem antes de ser vendidos. Prejuízo direto que sai do seu bolso todo mês.</p>
+          <span>Perda estimada: R$200–400/mês</span>
+        </div>
+      </div>
+      <div class="prej-card">
+        <div class="prej-icon">💸</div>
+        <div>
+          <h4>Caixa com divergências</h4>
+          <p>Troco errado, sangria irregular ou venda sem registrar. Sem relatório diário, você só descobre quando o buraco já é grande.</p>
+          <span>Perda estimada: R$150–300/mês</span>
+        </div>
+      </div>
+      <div class="prej-card">
+        <div class="prej-icon">📦</div>
+        <div>
+          <h4>Ruptura de estoque</h4>
+          <p>Produto em falta = venda perdida e morador insatisfeito. Sem alerta automático, o reabastecimento sempre chega tarde.</p>
+          <span>Perda estimada: R$100–250/mês</span>
+        </div>
+      </div>
+    </div>
+    <div class="prej-cta">
+      <p>"O monitoramento custa menos do que você perde todo mês sem ele."</p>
+      <a href="https://wa.me/5518996613486?text=Olá!%20Quero%20parar%20de%20perder%20dinheiro%20no%20meu%20mercado." target="_blank" class="btn-wa">💬 Quero resolver isso agora</a>
+    </div>
+  </div>
+</section>
+
+<!-- PLANOS -->
+<section class="planos" id="planos">
+  <div class="container">
+    <div class="planos-header">
+      <p class="sec-label">Planos</p>
+      <h2 class="sec-title">Simples, <em>sem surpresas</em></h2>
+      <p class="sec-desc">Sem taxa de instalação. Sem fidelidade. Cancele quando quiser.</p>
+    </div>
+    <div class="plans-grid">
+      <div class="plan">
+        <p class="plan-name">Básico</p>
+        <div class="plan-price"><strong>R$149</strong><span>/mês</span></div>
+        <p class="plan-sub">Para condomínios pequenos com até 50 unidades.</p>
+        <ul class="plan-list">
+          <li>Até 2 câmeras integradas</li>
+          <li>Alertas via WhatsApp</li>
+          <li>Controle de estoque básico</li>
+          <li>Relatório mensal em PDF</li>
+          <li class="off">Controle de acesso</li>
+          <li class="off">Gravação em nuvem</li>
+        </ul>
+        <a href="https://wa.me/5518996613486?text=Olá!%20Tenho%20interesse%20no%20plano%20Básico." target="_blank" class="plan-btn">Começar agora</a>
+      </div>
+      <div class="plan dest">
+        <div class="plan-tag">Mais escolhido</div>
+        <p class="plan-name">Profissional</p>
+        <div class="plan-price"><strong>R$299</strong><span>/mês</span></div>
+        <p class="plan-sub">Para condomínios de 50 a 200 unidades.</p>
+        <ul class="plan-list">
+          <li>Até 8 câmeras integradas</li>
+          <li>Alertas em tempo real</li>
+          <li>Controle de estoque avançado</li>
+          <li>Relatórios semanais</li>
+          <li>Controle de acesso integrado</li>
+          <li>Gravação em nuvem 30 dias</li>
+        </ul>
+        <a href="https://wa.me/5518996613486?text=Olá!%20Tenho%20interesse%20no%20plano%20Profissional." target="_blank" class="plan-btn">Começar agora</a>
+      </div>
+      <div class="plan">
+        <p class="plan-name">Enterprise</p>
+        <div class="plan-price"><strong>Sob consulta</strong></div>
+        <p class="plan-sub">Para grandes condomínios e administradoras.</p>
+        <ul class="plan-list">
+          <li>Câmeras ilimitadas</li>
+          <li>Multi-unidades em um painel</li>
+          <li>SLA garantido em contrato</li>
+          <li>Gerente de conta dedicado</li>
+          <li>Treinamento presencial</li>
+          <li>API de integração própria</li>
+        </ul>
+        <a href="https://wa.me/5518996613486?text=Olá!%20Quero%20saber%20sobre%20o%20plano%20Enterprise." target="_blank" class="plan-btn">Falar com especialista</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq" id="faq">
+  <div class="container">
+    <div class="faq-header">
+      <p class="sec-label">Dúvidas frequentes</p>
+      <h2 class="sec-title">Perguntas <em>mais comuns</em></h2>
+    </div>
+    <div class="faq-list">
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          Preciso comprar algum equipamento ou câmera nova?
+          <span class="faq-arrow">▾</span>
+        </button>
+        <div class="faq-a"><p>Na maioria dos casos, não. A Smart Monitoring integra com câmeras IP e DVRs que o condomínio já possui. Caso seja necessário algum equipamento adicional, indicamos as melhores opções com custo-benefício e sem obrigação de compra conosco.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          Em quanto tempo o sistema fica ativo?
+          <span class="faq-arrow">▾</span>
+        </button>
+        <div class="faq-a"><p>Em até 48 horas após a contratação. A instalação é feita de forma remota pela nossa equipe técnica, sem necessidade de visita presencial na maioria dos casos. Você já começa a receber alertas e acessar o painel no mesmo dia da configuração.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          O sistema funciona em mini mercados sem funcionário fixo?
+          <span class="faq-arrow">▾</span>
+        </button>
+        <div class="faq-a"><p>Sim, é justamente para esse modelo que o monitoramento faz mais diferença. Mercados autônomos e sem atendente fixo são os mais vulneráveis a furtos e divergências de caixa. O sistema monitora tudo automaticamente e alerta o responsável em tempo real.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          Posso cancelar o plano a qualquer momento?
+          <span class="faq-arrow">▾</span>
+        </button>
+        <div class="faq-a"><p>Sim. Não há fidelidade mínima nem multa de cancelamento. Basta avisar com 30 dias de antecedência e encerramos o contrato sem burocracia. Confiamos no nosso serviço e não precisamos prender clientes.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          Quem tem acesso ao painel e às câmeras?
+          <span class="faq-arrow">▾</span>
+        </button>
+        <div class="faq-a"><p>Somente as pessoas que o síndico ou responsável autorizar. É possível criar acessos com permissões diferentes — por exemplo, o síndico vê tudo, o zelador só vê o estoque. Todos os acessos são registrados e auditáveis.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <a href="#" class="footer-logo">Smart <span>Monitoring</span></a>
+    <div class="footer-links">
+      <a href="#recursos">Soluções</a>
+      <a href="#planos">Planos</a>
+      <a href="#faq">FAQ</a>
+      <a href="https://wa.me/5518996613486" target="_blank">WhatsApp</a>
+    </div>
+    <p class="footer-copy">© 2026 Smart Monitoring — Todos os direitos reservados.</p>
+  </div>
+</footer>
+
+<script>
+const hamburger = document.getElementById('hamburger');
+const mobileMenu = document.getElementById('mobile-menu');
+hamburger.addEventListener('click', () => {
+  hamburger.classList.toggle('open');
+  mobileMenu.classList.toggle('open');
+});
+function closeMenu() {
+  hamburger.classList.remove('open');
+  mobileMenu.classList.remove('open');
+}
+function toggleFaq(btn) {
+  const item = btn.closest('.faq-item');
+  const isOpen = item.classList.contains('open');
+  document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+  if (!isOpen) item.classList.add('open');
+}
+</script>
+</body>
+</html>
